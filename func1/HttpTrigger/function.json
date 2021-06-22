@@ -1,0 +1,26 @@
+{
+  "bindings": [
+    {
+      "authLevel": "function",
+      "type": "httpTrigger",
+      "direction": "in",
+      "name": "req",
+      "methods": [
+        "get",
+        "post"
+      ]
+    },
+    {
+      "name": "mySbMsg",
+      "type": "serviceBus",
+      "queueName": "correlation_servicebus_topic",
+      "connection": "servicebusconnectstring",
+      "direction": "out"
+    },
+    {
+      "type": "http",
+      "direction": "out",
+      "name": "httpResponse"
+    }
+  ]
+}
