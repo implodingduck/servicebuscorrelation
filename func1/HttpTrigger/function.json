@@ -11,16 +11,17 @@
       ]
     },
     {
+      "type": "http",
+      "direction": "out",
+      "name": "res"
+    },
+    {
       "name": "mySbMsg",
       "type": "serviceBus",
       "queueName": "correlation_servicebus_topic",
       "connection": "servicebusconnectstring",
       "direction": "out"
-    },
-    {
-      "type": "http",
-      "direction": "out",
-      "name": "httpResponse"
     }
-  ]
+  ],
+  "scriptFile": "../dist/HttpTrigger/index.js"
 }

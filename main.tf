@@ -40,7 +40,21 @@ resource "azurerm_servicebus_queue" "correlation" {
   enable_partitioning = true
 }
 
+
+resource "null_resource" "build_typescript"{
+  triggers = {
+    index = "${timestamp()}"
+  }
+  provisioner "local-exec" {
+    working_dir = "func1"
+    command     = "npm install && npm run build:production"
+  }
+}
+
 module "func1" {
+    depends_on = [
+      null_resource.build_typescript
+    ]
     source   = "github.com/implodingduck/tfmodules//functionapp"
     func_name = "correlationfunc1"
     resource_group_name = azurerm_resource_group.rg.name
