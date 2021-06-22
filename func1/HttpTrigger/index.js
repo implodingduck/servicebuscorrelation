@@ -1,7 +1,7 @@
 module.exports = async function (context, req) {
     context.log('JavaScript HTTP trigger function processed a request.');
     context.bindingData.correlationId = context.executionContext.invocationId
-    context.bindings.correlationId = context.executionContext.invocationId
+    //context.bindings.correlationId = context.executionContext.invocationId
     context.log("Hello from func1 with correlationId: " + context.bindingData.correlationId)
     const name = context.executionContext.invocationId
     const responseMessage = name
@@ -14,11 +14,11 @@ module.exports = async function (context, req) {
     };
     context.bindings.mySbMsg = {
         body: responseMessage,
-        correlationId: context.executionContext.invocationId
+        correlationId: context.bindingData.correlationId
     }
     context.bindings.httpResponse = {
         body: responseMessage
     }
     context.done()
-    return
+    return true;
 }
