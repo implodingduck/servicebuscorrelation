@@ -59,7 +59,7 @@ module "func1" {
     func_name = "correlationfunc1"
     resource_group_name = azurerm_resource_group.rg.name
     resource_group_location = azurerm_resource_group.rg.location
-    working_dir = "func1"
+    working_dir = "../func1"
     app_settings = {
       "FUNCTIONS_WORKER_RUNTIME" = "node"
       "servicebusconnectstring"  = azurerm_servicebus_namespace.correlation.default_primary_connection_string
@@ -72,7 +72,7 @@ module "func2" {
     func_name = "correlationfunc2"
     resource_group_name = azurerm_resource_group.rg.name
     resource_group_location = azurerm_resource_group.rg.location
-    working_dir = "func2"
+    working_dir = "../func2"
     app_settings = {
       "FUNCTIONS_WORKER_RUNTIME" = "node"
       "servicebusconnectstring"  = azurerm_servicebus_namespace.correlation.default_primary_connection_string
