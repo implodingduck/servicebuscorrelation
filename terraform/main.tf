@@ -47,7 +47,7 @@ resource "null_resource" "build_typescript"{
     index = "${timestamp()}"
   }
   provisioner "local-exec" {
-    working_dir = "func1"
+    working_dir = "../func1"
     command     = "npm install && npm run build:production"
   }
 }
