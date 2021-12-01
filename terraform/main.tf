@@ -36,20 +36,158 @@ resource azurerm_resource_group "rg" {
     location = var.location
 }
 
-resource "azurerm_servicebus_namespace" "correlation" {
-  name                = "correlation-servicebus-namespace"
-  location            = azurerm_resource_group.rg.location
+resource "azurerm_template_deployment" "sbnamespace" {
+  name                = "sbnamespace-01"
   resource_group_name = azurerm_resource_group.rg.name
-  sku                 = "Basic"
+
+  template_body = <<DEPLOY
+{
+   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "contentVersion":"1.0.0.0",
+   "parameters":{
+      "namespaceName":{
+         "type":"string",
+         "metadata":{
+            "description":"Name for the Namespace."
+         }
+      },
+      "location":{
+         "type":"string",
+         "defaultValue":"[resourceGroup().location]",
+         "metadata":{
+            "description":"Specifies the Azure location for all resources."
+         }
+      }
+   },
+   "resources":[
+      {
+         "type":"Microsoft.ServiceBus/namespaces",
+         "apiVersion":"2018-01-01-preview",
+         "name":"[parameters('namespaceName')]",
+         "location":"[parameters('location')]",
+         "identity":{
+            "type":"SystemAssigned"
+         },
+         "sku":{
+            "name":"Premium",
+            "tier":"Premium",
+            "capacity":1
+         },
+         "properties":{
+
+         }
+      }
+   ],
+   "outputs":{
+      "ServiceBusNamespaceId":{
+         "type":"string",
+         "value":"[resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName'))]"
+      },
+      "allTheThings": {
+        "type": "object",
+        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]
+      }
+   }
+}
+DEPLOY
+  parameters = {
+    namespaceName = "correlation-servicebus-namespace"
+    location = azurerm_resource_group.rg.location
+  }
+
+  deployment_mode = "Incremental"
 }
 
-resource "azurerm_servicebus_queue" "correlation" {
-  name                = "correlation_servicebus_topic"
-  resource_group_name = azurerm_resource_group.rg.name
-  namespace_name      = azurerm_servicebus_namespace.correlation.name
+# resource "azurerm_template_deployment" "sbencryption" {
+#   depends_on = [
+#     azurerm_template_deployment.sbnamespace,
 
-  enable_partitioning = true
-}
+#   ]
+#   name                = "sbencryption-01"
+#   resource_group_name = azurerm_resource_group.rg.name
+
+#   template_body = <<DEPLOY
+# {
+#    "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+#    "contentVersion":"1.0.0.0",
+#    "parameters":{
+#       "namespaceName":{
+#          "type":"string",
+#          "metadata":{
+#             "description":"Name for the Namespace to be created in cluster."
+#          }
+#       },
+#       "location":{
+#          "type":"string",
+#          "defaultValue":"[resourceGroup().location]",
+#          "metadata":{
+#             "description":"Specifies the Azure location for all resources."
+#          }
+#       },
+#       "keyVaultUri":{
+#          "type":"string",
+#          "metadata":{
+#             "description":"URI of the KeyVault."
+#          }
+#       },
+#       "keyName":{
+#          "type":"string",
+#          "metadata":{
+#             "description":"KeyName."
+#          }
+#       }
+#    },
+#    "resources":[
+#       {
+#          "type":"Microsoft.ServiceBus/namespaces",
+#          "apiVersion":"2018-01-01-preview",
+#          "name":"[parameters('namespaceName')]",
+#          "location":"[parameters('location')]",
+#          "identity":{
+#             "type":"SystemAssigned"
+#          },
+#          "sku":{
+#             "name":"Premium",
+#             "tier":"Premium",
+#             "capacity":1
+#          },
+#          "properties":{
+#             "encryption":{
+#                "keySource":"Microsoft.KeyVault",
+#                "keyVaultProperties":[
+#                   {
+#                      "keyName":"[parameters('keyName')]",
+#                      "keyVaultUri":"[parameters('keyVaultUri')]"
+#                   }
+#                ]
+#             }
+#          }
+#       }
+#    ]
+# }
+# DEPLOY
+#   parameters = {
+#     namespaceName = "correlation-servicebus-namespace"
+#     location = azurerm_resource_group.rg.location
+#     keyName = 
+#     keyVaultUri = 
+#   }
+
+#   deployment_mode = "Incremental"
+# }
+
+
+# resource "azurerm_servicebus_queue" "correlation" {
+#   depends_on = [
+#     azurerm_template_deployment.sbnamespace,
+#     azurerm_template_deployment.sbencryption
+#   ]
+#   name                = "correlation_servicebus_topic"
+#   resource_group_name = azurerm_resource_group.rg.name
+#   namespace_name      = azurerm_servicebus_namespace.correlation.name
+
+#   enable_partitioning = true
+# }
 
 
 resource "null_resource" "build_typescript"{
@@ -170,6 +308,17 @@ resource "azurerm_key_vault_access_policy" "func2" {
     "list"
   ]
 }
+
+# resource "azurerm_key_vault_access_policy" "sb" {
+#   key_vault_id = azurerm_key_vault.kv.id
+#   tenant_id = data.azurerm_client_config.current.tenant_id
+#   object_id = module.func2.identity_principal_id
+#   secret_permissions = [
+#     "get",
+#     "list"
+#   ]
+# }
+
 resource "azurerm_key_vault_secret" "servicebusconnectstring" {
   depends_on = [
     azurerm_key_vault_access_policy.client-config
