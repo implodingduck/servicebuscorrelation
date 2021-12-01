@@ -87,7 +87,7 @@ module "func1" {
       "servicebusconnectstring"  = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.servicebusconnectstring.name})"
     }
     linux_fx_version = "node|14"
-    identity = [{ 
+    app_identity = [{ 
       type = "System"
     }]
 }
@@ -104,7 +104,7 @@ module "func2" {
     }
     linux_fx_version = "node|14"
 
-    identity = [{ 
+    app_identity = [{ 
       type = "System"
     }]
 }
