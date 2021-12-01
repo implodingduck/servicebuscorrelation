@@ -72,7 +72,6 @@ resource "null_resource" "build_typescript2"{
   }
 }
 
-
 module "func1" {
     depends_on = [
       null_resource.build_typescript
