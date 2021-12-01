@@ -68,7 +68,7 @@ resource "null_resource" "build_typescript2"{
   }
   provisioner "local-exec" {
     working_dir = "../func2"
-    command     = "npm install && npm run build:production"
+    command     = "npm install"
   }
 }
 
