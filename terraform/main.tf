@@ -88,7 +88,7 @@ module "func1" {
     }
     linux_fx_version = "node|14"
     app_identity = [{ 
-      type = "System"
+      type = "SystemAssigned"
       identity_ids = null
     }]
 }
@@ -106,7 +106,7 @@ module "func2" {
     linux_fx_version = "node|14"
 
     app_identity = [{ 
-      type = "System",
+      type = "SystemAssigned",
       identity_ids = null
     }]
 }
