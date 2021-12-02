@@ -49,7 +49,7 @@ resource "azurerm_template_deployment" "sbnamespace" {
 
   template_body = <<DEPLOY
 {
-   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+   "$schema":"https://schema.management.azure.com/schemas/2021-01-01-preview/deploymentTemplate.json#",
    "contentVersion":"1.0.0.0",
    "parameters":{
       "namespaceName":{
@@ -415,6 +415,6 @@ resource "azurerm_role_assignment" "sender" {
 
 resource "azurerm_role_assignment" "receiver" {
   scope                = azurerm_resource_group.rg.id
-  role_definition_name = "Azure Service Bus Data Receiver:"
+  role_definition_name = "Azure Service Bus Data Receiver"
   principal_id         = module.func1.identity_principal_id
 }
