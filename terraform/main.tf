@@ -87,7 +87,7 @@ resource "azurerm_template_deployment" "sbnamespace" {
    "resources":[
       {
          "type":"Microsoft.ServiceBus/namespaces",
-         "apiVersion":"2018-01-01-preview",
+         "apiVersion":"2021-01-01-preview",
          "name":"[parameters('namespaceName')]",
          "location":"[parameters('location')]",
          "identity":{
