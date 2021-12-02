@@ -337,5 +337,5 @@ resource "azurerm_role_assignment" "sender" {
 resource "azurerm_role_assignment" "receiver" {
   scope                = azurerm_resource_group.rg.id
   role_definition_name = "Azure Service Bus Data Receiver"
-  principal_id         = module.func1.identity_principal_id
+  principal_id         = module.func2.identity_principal_id
 }
