@@ -125,6 +125,10 @@ resource "azurerm_template_deployment" "sbnamespace" {
          "type":"string",
          "value":"[resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName'))]"
       },
+      "serviceBusEndpoint": {
+        "type":"string",
+        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]['serviceBusEndpoint']"
+      }
       "allTheThings": {
         "type": "object",
         "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]"
@@ -136,7 +140,7 @@ DEPLOY
     namespaceName = "correlation-servicebus-namespace"
     location = azurerm_resource_group.rg.location
     keyName = azurerm_key_vault_key.generated.name
-    keyVaultUri = azurerm_key_vault.kv.value_uri
+    keyVaultUri = azurerm_key_vault.kv.vault_uri
     identity = {
       "userAssignedIdentity": azurerm_user_assigned_identity.sb.id
     }
@@ -268,7 +272,7 @@ module "func1" {
     working_dir = "../func1"
     app_settings = {
       "FUNCTIONS_WORKER_RUNTIME" = "node"
-      "servicebusconnectstring"  = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.servicebusconnectstring.name})"
+      "servicebusconnectstring__fullyQualifiedNamespace"  = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.servicebusconnectstring.name})"
     }
     linux_fx_version = "node|14"
     app_identity = [{ 
@@ -285,7 +289,7 @@ module "func2" {
     working_dir = "../func2"
     app_settings = {
       "FUNCTIONS_WORKER_RUNTIME" = "node"
-      "servicebusconnectstring"  = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.servicebusconnectstring.name})"
+      "servicebusconnectstring__fullyQualifiedNamespace"  = "@Microsoft.KeyVault(VaultName=${azurerm_key_vault.kv.name};SecretName=${azurerm_key_vault_secret.servicebusconnectstring.name})"
     }
     linux_fx_version = "node|14"
 
@@ -369,14 +373,10 @@ resource "azurerm_key_vault_access_policy" "sb" {
   object_id = azurerm_user_assigned_identity.sb.principal_id
 
   key_permissions = [
-    "create",
     "get",
-    "list",
-    "decrypt",
-    "encrypt",
-    "unwrapKey",
     "wrapKey",
-    "verify",
+    "unwrapKey",
+    "list"
   ]
 
   secret_permissions = [
@@ -390,7 +390,7 @@ resource "azurerm_key_vault_secret" "servicebusconnectstring" {
     azurerm_key_vault_access_policy.client-config
   ]
   name         = "servicebusconnectstring"
-  value        = "TBD" #azurerm_servicebus_namespace.correlation.default_primary_connection_string
+  value        = azurerm_template_deployment.sbnamespace.outputs["serviceBusEndpoint"] #"TBD" #azurerm_servicebus_namespace.correlation.default_primary_connection_string
   key_vault_id = azurerm_key_vault.kv.id
 }
 
@@ -409,4 +409,16 @@ resource "azurerm_key_vault_key" "generated" {
     "verify",
     "wrapKey",
   ]
+
+
+resource "azurerm_role_assignment" "sender" {
+  scope                = azurerm_resource_group.rg.id
+  role_definition_name = "Azure Service Bus Data Sender"
+  principal_id         = module.func1.identity_principal_id
+}
+
+resource "azurerm_role_assignment" "receiver" {
+  scope                = azurerm_resource_group.rg.id
+  role_definition_name = "Azure Service Bus Data Receiver:"
+  principal_id         = module.func1.identity_principal_id
 }
