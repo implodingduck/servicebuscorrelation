@@ -85,7 +85,7 @@ resource "azurerm_template_deployment" "sbnamespace" {
       },
       "allTheThings": {
         "type": "object",
-        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]
+        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]"
       }
    }
 }
