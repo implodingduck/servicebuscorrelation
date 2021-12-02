@@ -324,6 +324,6 @@ resource "azurerm_key_vault_secret" "servicebusconnectstring" {
     azurerm_key_vault_access_policy.client-config
   ]
   name         = "servicebusconnectstring"
-  value        = azurerm_servicebus_namespace.correlation.default_primary_connection_string
+  value        = "TBD" #azurerm_servicebus_namespace.correlation.default_primary_connection_string
   key_vault_id = azurerm_key_vault.kv.id
 }
