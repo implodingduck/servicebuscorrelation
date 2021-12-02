@@ -251,7 +251,8 @@ resource "azurerm_key_vault_access_policy" "client-config" {
     "purge",
     "get",
     "list",
-    "delete"
+    "delete",
+    "recover"
   ]
 
   certificate_permissions = [
