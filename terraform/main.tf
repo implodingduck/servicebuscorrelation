@@ -75,12 +75,10 @@ resource "azurerm_template_deployment" "sbnamespace" {
         "type":"string",
         "metadata":{
           "description":"KeyName."
+        }
       },
-      "identity": {
-        "type": "Object",
-        "defaultValue": {
-            "userAssignedIdentity": ""
-        },
+      "userAssignedIdentity": {
+        "type": "string",
         "metadata": {
             "description": "user-assigned identity."
         }
@@ -95,7 +93,7 @@ resource "azurerm_template_deployment" "sbnamespace" {
          "identity":{
             "type": "UserAssigned",
             "userAssignedIdentities": {
-              "[parameters('identity').userAssignedIdentity]": {}
+              "[parameters('userAssignedIdentity')]": {}
             }
          },
          "sku":{
@@ -141,9 +139,7 @@ DEPLOY
     location = azurerm_resource_group.rg.location
     keyName = azurerm_key_vault_key.generated.name
     keyVaultUri = azurerm_key_vault.kv.vault_uri
-    identity = {
-      "userAssignedIdentity": azurerm_user_assigned_identity.sb.id
-    }
+    userAssignedIdentity = azurerm_user_assigned_identity.sb.id
   }
 
   deployment_mode = "Incremental"
