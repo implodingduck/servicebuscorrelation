@@ -405,7 +405,7 @@ resource "azurerm_key_vault_key" "generated" {
     "verify",
     "wrapKey",
   ]
-
+}
 
 resource "azurerm_role_assignment" "sender" {
   scope                = azurerm_resource_group.rg.id
