@@ -307,7 +307,7 @@ resource "azurerm_key_vault_secret" "servicebusconnectstring" {
     azurerm_key_vault_access_policy.client-config
   ]
   name         = "servicebusconnectstring"
-  value        = lookup(azurerm_template_deployment.sbnamespace.outputs, "serviceBusEndpoint", "TBD") #azurerm_servicebus_namespace.correlation.default_primary_connection_string
+  value        = replace(replace(lookup(azurerm_template_deployment.sbnamespace.outputs, "serviceBusEndpoint", "https://TBD:443/"), "https://", ""), ":443/", "") #azurerm_servicebus_namespace.correlation.default_primary_connection_string
   key_vault_id = azurerm_key_vault.kv.id
 }
 
