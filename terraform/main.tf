@@ -36,6 +36,13 @@ resource azurerm_resource_group "rg" {
     location = var.location
 }
 
+resource "azurerm_user_assigned_identity" "sb" {
+  resource_group_name = azurerm_resource_group.rg.name
+  location            = azurerm_resource_group.rg.location
+
+  name = "uai-correlation-servicebus"
+}
+
 resource "azurerm_template_deployment" "sbnamespace" {
   name                = "sbnamespace-01"
   resource_group_name = azurerm_resource_group.rg.name
@@ -57,6 +64,15 @@ resource "azurerm_template_deployment" "sbnamespace" {
          "metadata":{
             "description":"Specifies the Azure location for all resources."
          }
+      },
+      "identity": {
+        "type": "Object",
+        "defaultValue": {
+            "userAssignedIdentity": ""
+        },
+        "metadata": {
+            "description": "user-assigned identity."
+        }
       }
    },
    "resources":[
@@ -66,7 +82,10 @@ resource "azurerm_template_deployment" "sbnamespace" {
          "name":"[parameters('namespaceName')]",
          "location":"[parameters('location')]",
          "identity":{
-            "type":"SystemAssigned"
+            "type": "UserAssigned",
+            "userAssignedIdentities": {
+              "[parameters('identity').userAssignedIdentity]": {}
+            }
          },
          "sku":{
             "name":"Premium",
@@ -92,7 +111,10 @@ resource "azurerm_template_deployment" "sbnamespace" {
 DEPLOY
   parameters = {
     namespaceName = "correlation-servicebus-namespace"
-    location = azurerm_resource_group.rg.location
+    location = azurerm_resource_group.rg.location,
+    "identity" = {
+      "userAssignedIdentity": azurerm_user_assigned_identity.sb.id
+    }
   }
 
   deployment_mode = "Incremental"
@@ -269,7 +291,14 @@ resource "azurerm_key_vault_access_policy" "client-config" {
     "get",
     "purge",
     "recover",
-    "delete"
+    "delete",
+    "list",
+    "decrypt",
+    "encrypt",
+    "unwrapKey",
+    "wrapKey",
+    "verify",
+    "sign"
   ]
 
   secret_permissions = [
@@ -309,15 +338,27 @@ resource "azurerm_key_vault_access_policy" "func2" {
   ]
 }
 
-# resource "azurerm_key_vault_access_policy" "sb" {
-#   key_vault_id = azurerm_key_vault.kv.id
-#   tenant_id = data.azurerm_client_config.current.tenant_id
-#   object_id = module.func2.identity_principal_id
-#   secret_permissions = [
-#     "get",
-#     "list"
-#   ]
-# }
+resource "azurerm_key_vault_access_policy" "sb" {
+  key_vault_id = azurerm_key_vault.kv.id
+  tenant_id = data.azurerm_client_config.current.tenant_id
+  object_id = azurerm_user_assigned_identity.sb.principal_id
+
+  key_permissions = [
+    "create",
+    "get",
+    "list",
+    "decrypt",
+    "encrypt",
+    "unwrapKey",
+    "wrapKey",
+    "verify",
+  ]
+
+  secret_permissions = [
+    "get",
+    "list"
+  ]
+}
 
 resource "azurerm_key_vault_secret" "servicebusconnectstring" {
   depends_on = [
@@ -326,4 +367,21 @@ resource "azurerm_key_vault_secret" "servicebusconnectstring" {
   name         = "servicebusconnectstring"
   value        = "TBD" #azurerm_servicebus_namespace.correlation.default_primary_connection_string
   key_vault_id = azurerm_key_vault.kv.id
+}
+
+
+resource "azurerm_key_vault_key" "generated" {
+  name         = "generated-certificate"
+  key_vault_id = azurerm_key_vault.kv.id
+  key_type     = "RSA"
+  key_size     = 2048
+
+  key_opts = [
+    "decrypt",
+    "encrypt",
+    "sign",
+    "unwrapKey",
+    "verify",
+    "wrapKey",
+  ]
 }
