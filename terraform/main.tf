@@ -127,8 +127,8 @@ resource "azurerm_template_deployment" "sbnamespace" {
       },
       "serviceBusEndpoint": {
         "type":"string",
-        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]['serviceBusEndpoint']"
-      }
+        "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName'))).serviceBusEndpoint]"
+      },
       "allTheThings": {
         "type": "object",
         "value": "[reference(resourceId('Microsoft.ServiceBus/namespaces',parameters('namespaceName')))]"
