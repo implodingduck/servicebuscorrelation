@@ -145,16 +145,16 @@ DEPLOY
   deployment_mode = "Incremental"
 }
 
-# resource "azurerm_servicebus_queue" "correlation" {
-#   depends_on = [
-#     azurerm_template_deployment.sbnamespace
-#   ]
-#   name                = "correlation_servicebus_topic"
-#   resource_group_name = azurerm_resource_group.rg.name
-#   namespace_name      = azurerm_servicebus_namespace.correlation.name
+resource "azurerm_servicebus_queue" "correlation" {
+  depends_on = [
+    azurerm_template_deployment.sbnamespace
+  ]
+  name                = "correlation_servicebus_topic"
+  resource_group_name = azurerm_resource_group.rg.name
+  namespace_name      = "correlation-servicebus-namespace"
 
-#   enable_partitioning = true
-# }
+  enable_partitioning = true
+}
 
 
 resource "null_resource" "build_typescript"{
