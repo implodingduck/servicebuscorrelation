@@ -110,7 +110,7 @@ resource "azurerm_template_deployment" "sbnamespace" {
                         "keyName": "[parameters('keyName')]",
                         "keyVaultUri": "[parameters('keyVaultUri')]",
                         "identity": {
-                            "userAssignedIdentity": "[parameters('identity').userAssignedIdentity]"
+                            "userAssignedIdentity": "[parameters('userAssignedIdentity')]"
                         }
                     }
                ]
