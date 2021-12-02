@@ -145,89 +145,9 @@ DEPLOY
   deployment_mode = "Incremental"
 }
 
-# resource "azurerm_template_deployment" "sbencryption" {
-#   depends_on = [
-#     azurerm_template_deployment.sbnamespace,
-
-#   ]
-#   name                = "sbencryption-01"
-#   resource_group_name = azurerm_resource_group.rg.name
-
-#   template_body = <<DEPLOY
-# {
-#    "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-#    "contentVersion":"1.0.0.0",
-#    "parameters":{
-#       "namespaceName":{
-#          "type":"string",
-#          "metadata":{
-#             "description":"Name for the Namespace to be created in cluster."
-#          }
-#       },
-#       "location":{
-#          "type":"string",
-#          "defaultValue":"[resourceGroup().location]",
-#          "metadata":{
-#             "description":"Specifies the Azure location for all resources."
-#          }
-#       },
-#       "keyVaultUri":{
-#          "type":"string",
-#          "metadata":{
-#             "description":"URI of the KeyVault."
-#          }
-#       },
-#       "keyName":{
-#          "type":"string",
-#          "metadata":{
-#             "description":"KeyName."
-#          }
-#       }
-#    },
-#    "resources":[
-#       {
-#          "type":"Microsoft.ServiceBus/namespaces",
-#          "apiVersion":"2018-01-01-preview",
-#          "name":"[parameters('namespaceName')]",
-#          "location":"[parameters('location')]",
-#          "identity":{
-#             "type":"SystemAssigned"
-#          },
-#          "sku":{
-#             "name":"Premium",
-#             "tier":"Premium",
-#             "capacity":1
-#          },
-#          "properties":{
-#             "encryption":{
-#                "keySource":"Microsoft.KeyVault",
-#                "keyVaultProperties":[
-#                   {
-#                      "keyName":"[parameters('keyName')]",
-#                      "keyVaultUri":"[parameters('keyVaultUri')]"
-#                   }
-#                ]
-#             }
-#          }
-#       }
-#    ]
-# }
-# DEPLOY
-#   parameters = {
-#     namespaceName = "correlation-servicebus-namespace"
-#     location = azurerm_resource_group.rg.location
-#     keyName = 
-#     keyVaultUri = 
-#   }
-
-#   deployment_mode = "Incremental"
-# }
-
-
 # resource "azurerm_servicebus_queue" "correlation" {
 #   depends_on = [
-#     azurerm_template_deployment.sbnamespace,
-#     azurerm_template_deployment.sbencryption
+#     azurerm_template_deployment.sbnamespace
 #   ]
 #   name                = "correlation_servicebus_topic"
 #   resource_group_name = azurerm_resource_group.rg.name
