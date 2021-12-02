@@ -65,6 +65,17 @@ resource "azurerm_template_deployment" "sbnamespace" {
             "description":"Specifies the Azure location for all resources."
          }
       },
+      "keyVaultUri":{
+        "type":"string",
+        "metadata":{
+          "description":"URI of the KeyVault."
+        }
+      },
+      "keyName":{
+        "type":"string",
+        "metadata":{
+          "description":"KeyName."
+      },
       "identity": {
         "type": "Object",
         "defaultValue": {
@@ -93,7 +104,19 @@ resource "azurerm_template_deployment" "sbnamespace" {
             "capacity":1
          },
          "properties":{
-
+            "encryption":{
+               "requireInfrastructureEncryption":true,  
+               "keySource":"Microsoft.KeyVault",
+               "keyVaultProperties":[
+                    {
+                        "keyName": "[parameters('keyName')]",
+                        "keyVaultUri": "[parameters('keyVaultUri')]",
+                        "identity": {
+                            "userAssignedIdentity": "[parameters('identity').userAssignedIdentity]"
+                        }
+                    }
+               ]
+            }
          }
       }
    ],
@@ -111,8 +134,10 @@ resource "azurerm_template_deployment" "sbnamespace" {
 DEPLOY
   parameters = {
     namespaceName = "correlation-servicebus-namespace"
-    location = azurerm_resource_group.rg.location,
-    "identity" = {
+    location = azurerm_resource_group.rg.location
+    keyName = azurerm_key_vault_key.generated.name
+    keyVaultUri = azurerm_key_vault.kv.value_uri
+    identity = {
       "userAssignedIdentity": azurerm_user_assigned_identity.sb.id
     }
   }
